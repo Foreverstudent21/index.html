@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #FF4500 0%, #FF4500 45%, #1E90FF 55%, #1E90FF 100%);
+            display: flex;
+            overflow: hidden;
+        }
+        .title-box {
+            background: white;
+            border: 3px solid #ff6b6b;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            margin: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .title {
+            font-size: 3em;
+            color: #8B0000;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 100vw;
+            max-height: 100vh;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .board-container {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            flex: 1;
+            padding: 10px;
+        }
+        .square {
+            border: 3px solid #333;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: linear-gradient(45deg, #fff5f5, #fff);
+            font-size: 1.2vw;
+            text-align: center;
+            padding: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .square.marriage {
+            background: linear-gradient(45deg, #ffcccc, #ffe6e6);
+            border: 3px solid #ff6b6b;
+            font-weight: bold;
+            color: #c82333;
+        }
+        .player {
+            position: absolute;
+            font-size: 4vw;
+            width: 8vw;
+            height: 8vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .player1 { 
+            left: 5px;
+            top: 5px;
+        }
+        .player2 { 
+            right: 5px;
+            top: 5px;
+        }
+        .player1::before {
+            content: "🍒";
+        }
+        .player2::before {
+            content: "🫐";
+        }
+        .instructions {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            width: 300px;
+            height: fit-content;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .dice-container {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .dice-box {
+            background: white;
+            border: 2px solid #ff6b6b;
+            border-radius: 15px;
+            padding: 20px;
+            width: 200px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .dice-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .dice-display {
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+            position: relative;
+        }
+        .roll-button {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #ff6b6b, #ff4d4d);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+        .restart-button {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #4ecdc4, #2b9c90);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+        .dice-animation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(255,255,255,0.2),
+                rgba(255,255,255,0.2) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            animation: diceRoll 1s linear infinite;
+        }
+        @keyframes diceRoll {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        #message {
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .win-message {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        .lose-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        @media (max-width: 800px) {
+            .board-container {
+                flex-direction: column;
+            }
+            .instructions {
+                width: 100%;
+                margin-top: 15px;
+            }
+            .title {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="title-box">
+            <div class="title">❤️ Wedding Walk ❤️</div>
+        </div>
+        <div class="header">
+            <div class="instructions">
+                <h2>Game Instructions</h2>
+                <ul>
+                    <li>Reach "Marriage - 24th April 2025" together to win</li>
+                    <li>Each player moves based on their dice roll</li>
+                    <li>Dice rolls can be -3 to +3 steps</li>
+                    <li>If one reaches the end first, both lose</li>
+                    <li>Click "Roll Dice" to begin</li>
+                </ul>
+            </div>
+            <div class="controls">
+                <button class="roll-button" onclick="play()">Roll Dice</button>
+                <button class="restart-button" onclick="resetGame()">Restart Game</button>
+            </div>
+        </div>
+        <div class="board-container">
+            <div class="board" id="board"></div>
+            <div class="dice-container">
+                <div class="dice-box">
+                    <div class="dice-header">🍒 Cherry</div>
+                    <div class="dice-display" id="cherryDice">
+                        <div class="dice-animation"></div>
+                        <span class="dice-value">0</span>
+                    </div>
+                </div>
+                <div class="dice-box">
+                    <div class="dice-header">🫐 Blueberry</div>
+                    <div class="dice-display" id="blueberryDice">
+                        <div class="dice-animation"></div>
+                        <span class="dice-value">0</span>
+                    </div>
+                </div>
+            </div>
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script>
+        const boardSize = 25;
+        const marriageSquare = 24;
+        let player1Pos = 0;
+        let player2Pos = 0;
+        let gameOver = false;
+        let animationInProgress = false;
+
+        const board = document.getElementById('board');
+        const message = document.getElementById('message');
+        const cherryDice = document.getElementById('cherryDice');
+        const blueberryDice = document.getElementById('blueberryDice');
+
+        // Content for each square with emojis
+        const squareContent = [
+            "👶 Birth - 1996",
+            "🚶♂️ First Steps",
+            "🗣️ First Words",
+            "🎨 Preschool",
+            "🏫 Elementary School",
+            "🌊 Tsunami - 2004",
+            "📚 Middle School",
+            "📑 SSLC",
+            "🎒 High School Begins",
+            "🎓 12th Standard",
+            "🏫 College Begins",
+            "🎓 UG Life",
+            "🎓 UG Ends",
+            "📚 PG Starts",
+            "🚧 Lockdown Starts",
+            "🌱 Pandemic Ends",
+            "📚 PG Life",
+            "👨👩👧👦 Families Meet",
+            "❤️ First Meeting",
+            "📱 Chatting, Calls etc",
+            "💍 Engagement Planning",
+            "💍 Engagement",
+            "🎓 PG Ends",
+            "🎉 Wedding Planning",
+            "👰🤵 Marriage - 24th April 2025"
+        ];
+
+        // Create the board with content
+        for (let i = 0; i < boardSize; i++) {
+            const square = document.createElement('div');
+            square.className = 'square';
+            
+            // Add marriage class to last square
+            if (i === marriageSquare) square.className += ' marriage';
+            
+            square.innerHTML = squareContent[i];
+            board.appendChild(square);
+        }
+
+        async function play() {
+            if (gameOver || animationInProgress) return;
+
+            animationInProgress = true;
+            const roll1 = Math.floor(Math.random() * 7) - 3;
+            const roll2 = Math.floor(Math.random() * 7) - 3;
+
+            // Show rolling animation
+            cherryDice.querySelector('.dice-animation').style.display = 'block';
+            blueberryDice.querySelector('.dice-animation').style.display = 'block';
+            
+            // Clear previous values
+            cherryDice.querySelector('.dice-value').textContent = '';
+            blueberryDice.querySelector('.dice-value').textContent = '';
+            
+            // Simulate rolling
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Show results
+            showDiceResult(roll1, roll2);
+            
+            // Animate movements
+            await animateMovement(1, roll1);
+            await animateMovement(2, roll2);
+            
+            // Check game status
+            checkGameStatus();
+            
+            animationInProgress = false;
+        }
+
+        function showDiceResult(roll1, roll2) {
+            // Hide animations
+            cherryDice.querySelector('.dice-animation').style.display = 'none';
+            blueberryDice.querySelector('.dice-animation').style.display = 'none';
+            
+            // Set final values
+            cherryDice.querySelector('.dice-value').textContent = roll1;
+            blueberryDice.querySelector('.dice-value').textContent = roll2;
+        }
+
+        async function animateMovement(player, roll) {
+            const direction = roll > 0 ? 1 : -1;
+            const steps = Math.abs(roll);
+            
+            for (let i = 0; i < steps; i++) {
+                if (player === 1) {
+                    player1Pos += direction;
+                    player1Pos = Math.max(0, Math.min(player1Pos, marriageSquare));
+                } else {
+                    player2Pos += direction;
+                    player2Pos = Math.max(0, Math.min(player2Pos, marriageSquare));
+                }
+                
+                updatePlayers();
+                await new Promise(resolve => setTimeout(resolve, 150));
+            }
+        }
+
+        function updatePlayers() {
+            document.querySelectorAll('.player').forEach(p => p.remove());
+            
+            // Add cherry
+            const cherry = document.createElement('div');
+            cherry.className = 'player player1';
+            document.querySelectorAll('.square')[player1Pos].appendChild(cherry);
+            
+            // Add blueberry
+            const blueberry = document.createElement('div');
+            blueberry.className = 'player player2';
+            document.querySelectorAll('.square')[player2Pos].appendChild(blueberry);
+        }
+
+        function checkGameStatus() {
+            if (player1Pos === marriageSquare && player2Pos === marriageSquare) {
+                showMessage('🎉 Married on 24th April 2025! 🎉', 'win-message');
+                gameOver = true;
+                confetti();
+            } else if (player1Pos === marriageSquare || player2Pos === marriageSquare) {
+                showMessage('💔 Oops! You didn\'t reach together. Try again! 💔', 'lose-message');
+                gameOver = true;
+            }
+        }
+
+        function showMessage(text, className) {
+            message.textContent = text;
+            message.className = className;
+        }
+
+        function confetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ce54', '#ffea00'];
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.animation = 'confetti 2s linear';
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 2000);
+            }
+        }
+
+        function resetGame() {
+            player1Pos = 0;
+            player2Pos = 0;
+            gameOver = false;
+            animationInProgress = false;
+            message.textContent = '';
+            cherryDice.querySelector('.dice-value').textContent = '0';
+            blueberryDice.querySelector('.dice-value').textContent = '0';
+            updatePlayers();
+        }
+
+        // Initialize game
+        updatePlayers();
+    </script>
+</body>
+</html>
